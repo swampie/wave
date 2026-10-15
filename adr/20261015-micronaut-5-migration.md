@@ -263,6 +263,31 @@ Intermediate state worth knowing when replaying: after the first green compile t
 100 *new* failures, all explained by the four runtime behaviour changes documented in §2.1, §2.2,
 §3.5 and §3.6 (none of them is a compile error, so they only surface in tests).
 
+### 5.1 Dependency collision check
+
+Method: resolved `runtimeClasspath`/`testRuntimeClasspath` artifact lists dumped via an init script,
+every jar scanned for class names shipped by more than one jar, the Gradle tree checked for any
+module resolved *below* a requested version, and the same report produced for the Micronaut 4
+baseline commit for comparison.
+
+- No version downgrades. Netty is uniformly 4.2.19 (+ tcnative 2.0.84), Groovy uniformly 5.0.8 (no
+  Groovy 4 or `org.codehaus.groovy` jars left), every Micronaut module at its BOM version, AWS SDK
+  uniformly 2.54.3.
+- Jackson 2 (`com.fasterxml.jackson.core:*` 2.22.2) stays on the classpath next to Jackson 3: it is
+  required by `io.kubernetes:client-java-api`. Different packages, no class overlap; the Jackson 2
+  `jackson-datatype-*`/`jackson-dataformat-yaml` modules are gone. `snakeyaml` 2.6 (Micronaut YAML
+  config) and `snakeyaml-engine` 3.0.1 (Jackson 3 YAML) likewise coexist in different packages.
+- Duplicate classes on the runtime classpath, identical on Micronaut 4 and 5, i.e. pre-existing:
+  `io.kubernetes:client-java-api` ↔ `client-java-api-fluent` (the fluent jar re-bundles the API,
+  same version) and `javax.activation:activation:1.1` ↔ `javax.activation-api:1.2.0` (via
+  `lib-mail` → `javax.mail`). Test classpath only: `hamcrest-core:1.3` ↔ `hamcrest:3.0` (JUnit 4
+  via `spock-junit4`), also pre-existing.
+- New transitive modules: `micronaut-aws-distributed-configuration` (dependency of
+  `micronaut-aws-parameter-store` 5; inert with `micronaut.config-client.enabled: false`, used by
+  the `ec2` bootstrap), `netty-codec-multipart-core` (Micronaut 5 multipart refactor),
+  `checker-qual`. Dropped: `commons-logging`, `LatencyUtils`, AWS `apache-client` (replaced by
+  `apache5-client`).
+
 ## 6. Replay checklist for another project
 
 1. Build runs on JDK 25: toolchain **and** daemon (`gradle/gradle-daemon-jvm.properties`, or
