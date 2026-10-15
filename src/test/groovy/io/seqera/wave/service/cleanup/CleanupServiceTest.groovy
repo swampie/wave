@@ -26,23 +26,33 @@ import spock.lang.Specification
  */
 class CleanupServiceTest extends Specification {
 
+    /**
+     * Groovy 5 cannot coerce a stubbed response to {@code void}, therefore a Spy can no longer
+     * suppress a real void method with {@code >> null}; the no-op overrides below replace that
+     */
+    static class TestCleanupService extends CleanupServiceImpl {
+        @Override protected void cleanupJob0(String jobName) { }
+        @Override protected void cleanupDir0(String path) { }
+        @Override protected void cleanupScanId0(String scanId) { }
+    }
+
     def 'should validate cleanup entry' () {
         given:
-        def service = Spy(new CleanupServiceImpl())
+        def service = Spy(new TestCleanupService())
 
         when:
         service.cleanupEntry('job:foo')
         then:
-        1 * service.cleanupJob0('foo') >> null
+        1 * service.cleanupJob0('foo')
 
         when:
         service.cleanupEntry('dir:/some/data/dir')
         then:
-        1 * service.cleanupDir0('/some/data/dir') >> null
+        1 * service.cleanupDir0('/some/data/dir')
 
         when:
         service.cleanupEntry('scanid:foo:bar')
         then:
-        1 * service.cleanupScanId0('foo:bar') >> null
+        1 * service.cleanupScanId0('foo:bar')
     }
 }

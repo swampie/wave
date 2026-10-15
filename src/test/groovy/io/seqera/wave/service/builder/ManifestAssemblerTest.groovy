@@ -32,6 +32,14 @@ import static io.seqera.wave.model.ContentType.OCI_IMAGE_MANIFEST_V1
 class ManifestAssemblerTest extends Specification {
 
     /**
+     * Groovy 5 cannot coerce a stubbed response to {@code void}, therefore a Spy can no longer
+     * suppress the real {@code pushOciManifest} with {@code >> null}; this no-op override replaces that
+     */
+    static class TestAssembler extends ManifestAssembler {
+        @Override protected void pushOciManifest(String image, byte[] body, String digest, PlatformId identity) { }
+    }
+
+    /**
      * The manifest uploaded by `singularity push` — a Docker v2 manifest wrapping a SIF layer
      */
     static final String SIF_DOCKER_V2_MANIFEST = '''\
@@ -191,7 +199,7 @@ class ManifestAssemblerTest extends Specification {
         def expectedBytes = ManifestAssembler.rewriteAsOciManifest(body)
         def expectedDigest = RegHelper.digest(expectedBytes)
         and:
-        def assembler = Spy(ManifestAssembler)
+        def assembler = Spy(new TestAssembler())
         def descriptor = [
                 mediaType: DOCKER_MANIFEST_V2_TYPE,
                 digest: 'sha256:original',
@@ -204,7 +212,7 @@ class ManifestAssemblerTest extends Specification {
         def result = assembler.normalizePlatformManifest('docker.io/foo/bar:arm64', descriptor, PlatformId.NULL)
 
         then: 'the rewritten manifest is pushed by digest against the child image'
-        1 * assembler.pushOciManifest('docker.io/foo/bar:arm64', { byte[] it -> RegHelper.digest(it) == expectedDigest }, expectedDigest, PlatformId.NULL) >> null
+        1 * assembler.pushOciManifest('docker.io/foo/bar:arm64', { byte[] it -> RegHelper.digest(it) == expectedDigest }, expectedDigest, PlatformId.NULL)
 
         and: 'the index descriptor points at the new OCI manifest'
         result.mediaType == OCI_IMAGE_MANIFEST_V1

@@ -520,22 +520,22 @@ class ContainerScanServiceImplTest extends Specification {
         when:
         scanService.storeScanEntry(scanSucceeded)
         then:
-        1 * scanStore.storeScan(scanSucceeded) >> null
+        1 * scanStore.storeScan(scanSucceeded)
         1 * persistenceService.saveScanRecordAsync(new WaveScanRecord(scanSucceeded)) >> null
-        0 * cleanupService.cleanupScanId(container) >> null
+        0 * cleanupService.cleanupScanId(container)
 
         when:
         scanService.storeScanEntry(scanNotDone)
         then:
-        1 * scanStore.storeScan(scanNotDone) >> null
+        1 * scanStore.storeScan(scanNotDone)
         1 * persistenceService.saveScanRecordAsync(new WaveScanRecord(scanNotDone)) >> null
-        0 * cleanupService.cleanupScanId(container) >> null
+        0 * cleanupService.cleanupScanId(container)
 
         when:
         scanService.storeScanEntry(scanFailed)
         then:
-        1 * scanStore.storeScan(scanFailed) >> null
+        1 * scanStore.storeScan(scanFailed)
         1 * persistenceService.saveScanRecordAsync(new WaveScanRecord(scanFailed)) >> null
-        1 * cleanupService.cleanupScanId(container) >> null
+        1 * cleanupService.cleanupScanId(container)
     }
 }
