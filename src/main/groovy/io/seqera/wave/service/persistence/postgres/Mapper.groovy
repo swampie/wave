@@ -18,14 +18,15 @@
 
 package io.seqera.wave.service.persistence.postgres
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.introspect.AnnotatedMember
-import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector
-import com.fasterxml.jackson.databind.node.ObjectNode
 import groovy.transform.CompileStatic
 import io.seqera.util.pool.SimplePool
 import io.seqera.wave.service.persistence.PostgresIgnore
 import io.seqera.wave.util.JacksonHelper
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.cfg.MapperConfig
+import tools.jackson.databind.introspect.AnnotatedMember
+import tools.jackson.databind.introspect.JacksonAnnotationIntrospector
+import tools.jackson.databind.node.ObjectNode
 /**
  * Implementation of a mapper for JSON objects
  *
@@ -43,13 +44,14 @@ class Mapper {
     }
 
     static private ObjectMapper ignoreMapper() {
-        JacksonHelper.defaultJsonMapper()
-                .setAnnotationIntrospector(new JacksonAnnotationIntrospector() {
+        JacksonHelper.defaultJsonMapperBuilder()
+                .annotationIntrospector(new JacksonAnnotationIntrospector() {
                     @Override
-                    boolean hasIgnoreMarker(AnnotatedMember a) {
-                        return a.hasAnnotation(PostgresIgnore) || super.hasIgnoreMarker(a)
+                    boolean hasIgnoreMarker(MapperConfig<?> config, AnnotatedMember a) {
+                        return a.hasAnnotation(PostgresIgnore) || super.hasIgnoreMarker(config, a)
                     }
                 })
+                .build() as ObjectMapper
     }
 
     static String toJson(Object object) {

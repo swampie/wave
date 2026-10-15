@@ -4,7 +4,7 @@ import java.time.format.DateTimeFormatter
 plugins {
     id 'io.seqera.wave.java-library-conventions'
     id 'io.seqera.wave.groovy-application-conventions'
-    id "io.micronaut.minimal.application" version "4.1.1"
+    id "io.micronaut.minimal.application" version "5.0.2"
     id "com.google.cloud.tools.jib" version "3.5.4"
     id 'jacoco'
 }
@@ -89,8 +89,8 @@ dependencies {
     implementation 'io.kubernetes:client-java:27.0.0'
     implementation 'io.kubernetes:client-java-api-fluent:27.0.0'
     implementation 'com.google.code.gson:gson:2.10.1'
-    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
-    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml'
+    // java.time support is built into Jackson 3 databind (former jackson-datatype-jsr310)
+    implementation 'tools.jackson.dataformat:jackson-dataformat-yaml'
     // Moshi dependencies now provided by lib-serde-moshi
     implementation 'redis.clients:jedis:5.1.3'
     implementation 'io.github.resilience4j:resilience4j-ratelimiter:0.17.0'
@@ -137,7 +137,7 @@ dependencies {
     // bump version to prevent security issue
     runtimeOnly 'org.apache.commons:commons-lang3:3.18.0'
     runtimeOnly platform("io.netty:netty-bom:$nettyVersion")
-    implementation platform('com.fasterxml.jackson:jackson-bom:2.22.3')
+    // Jackson 3 (tools.jackson.*) versions are managed by the Micronaut platform BOM
     constraints {
         implementation 'org.jsoup:jsoup:1.23.2'
         implementation 'org.apache.httpcomponents.core5:httpcore5-h2:5.4.4'

@@ -106,7 +106,7 @@ class DockerBuildStrategy extends BuildStrategy {
                          '--entrypoint',
                          BUILDKIT_ENTRYPOINT]
 
-        if( credsFile ) {
+        if( credsFile != null ) {
             wrapper.add('-v')
             wrapper.add("$credsFile:/home/user/.docker/config.json:ro".toString())
         }
@@ -131,7 +131,7 @@ class DockerBuildStrategy extends BuildStrategy {
                          "--entrypoint", '',
                          '-v', "$workDir:$workDir".toString()]
 
-        if( credsFile ) {
+        if( credsFile != null ) {
             wrapper.add('-v')
             wrapper.add("$credsFile:/root/.singularity/docker-config.json:ro".toString())
             //
